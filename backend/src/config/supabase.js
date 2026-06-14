@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
+import ws from 'ws';
 
 dotenv.config();
 
@@ -11,25 +12,41 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   console.error('Missing Supabase environment variables. Check your .env file.');
 }
 
-// Service role client - used for privileged backend operations (bypasses RLS)
-export const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+const supabaseOptions = {
   auth: {
     autoRefreshToken: false,
     persistSession: false,
   },
-});
+  global: {
+    fetch: fetch,
+  },
+  realtime: {
+    transport: ws,
+  },
+};
 
-// Anon client - used to verify user JWTs / perform user-scoped operations
-export const supabaseAnon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
+// Service role client - bypasses RLS
+export const supabaseAdmin = createClient(
+  SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY,
+  supabaseOptions
+);
+
+// Anon client
+export const supabaseAnon = createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
+  {
+    ...supabaseOptions,
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
 
 /**
  * Creates a Supabase client scoped to a specific user's access token.
- * This ensures RLS policies are enforced as that user.
  */
 export const getUserScopedClient = (accessToken) => {
   return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -37,6 +54,10 @@ export const getUserScopedClient = (accessToken) => {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
+      fetch: fetch,
+    },
+    realtime: {
+      transport: ws,
     },
     auth: {
       autoRefreshToken: false,
