@@ -10,15 +10,28 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async () => {
-    try {
-      const { data } = await api.get('/auth/me');
-      setProfile(data.data.profile);
-    } catch (err) {
-      console.error('Failed to fetch profile:', err.message);
-      setProfile(null);
+ const fetchProfile = async () => {
+  try {
+    const { data } = await api.get('/auth/me');
+    setProfile(data.data.profile);
+  } catch (err) {
+    // If profile not found, use Google OAuth data as fallback
+    const { data: sessionData } = await supabase.auth.getSession();
+    const googleUser = sessionData?.session?.user;
+    
+    if (googleUser) {
+      setProfile({
+        full_name: googleUser.user_metadata?.full_name || 
+                  googleUser.user_metadata?.name || 
+                  googleUser.email?.split('@')[0] || 
+                  'User',
+        avatar_url: googleUser.user_metadata?.avatar_url || 
+                    googleUser.user_metadata?.picture || null,
+        role: 'candidate'
+      });
     }
-  };
+  }
+};
 
   useEffect(() => {
     const init = async () => {
