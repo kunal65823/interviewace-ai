@@ -20,7 +20,7 @@ export default function DashboardPage() {
           api.get('/interviews/sessions'),
         ]);
         setOverview(overviewRes.data.data);
-        setRecentSessions(sessionsRes.data.data.sessions.slice(0, 5));
+       setRecentSessions((sessionsRes.data.data?.sessions || []).slice(0, 5));
       } catch (err) {
         console.error('Failed to load dashboard data:', err.message);
       } finally {
