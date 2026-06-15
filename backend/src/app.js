@@ -21,33 +21,25 @@ dotenv.config();
 
 const app = express();
 
-// ---------- Security & Core Middleware ----------
-app.use(helmet());
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      const allowedOrigins = [
-        'http://localhost:5173',
-        'http://localhost:3000',
-        'https://interviewace-ai-three.vercel.app',
-        process.env.FRONTEND_URL,
-      ].filter(Boolean);
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(null, true);
-      }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    optionsSuccessStatus: 200,
-  })
-);
+// ---------- CORS - Must be first ----------
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: false,
+}));
 
-// Handle preflight OPTIONS requests
-app.options('*', cors());
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.sendStatus(200);
+});
+
+// ---------- Security & Core Middleware ----------
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+}));
 app.use(compression());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json({ limit: '10mb' }));
@@ -65,7 +57,11 @@ app.use('/api', limiter);
 
 // ---------- Health Check ----------
 app.get('/api/health', (req, res) => {
-  res.json({ success: true, message: 'InterviewAce AI API is running', timestamp: new Date().toISOString() });
+  res.json({
+    success: true,
+    message: 'InterviewAce AI API is running',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // ---------- Routes ----------
