@@ -18,7 +18,7 @@ export default function ResumeAnalyzerPage() {
   const loadResumes = async () => {
     try {
       const { data } = await api.get('/resumes');
-      setResumes(data.data.resumes);
+      setResumes(data.data?.resumes || []);
       if (data.data.resumes.length > 0 && !activeAnalysis) {
         setActiveAnalysis(data.data.resumes[0].resume_analysis?.[0] || null);
       }

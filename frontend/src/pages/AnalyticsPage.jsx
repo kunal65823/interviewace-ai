@@ -18,8 +18,8 @@ export default function AnalyticsPage() {
           api.get('/analytics/overview'),
           api.get('/analytics/trends'),
         ]);
-        setOverview(overviewRes.data.data || null);
         setTrends(trendsRes.data.data?.trends || []);
+setOverview(overviewRes.data.data || null);
       } catch (err) {
         toast({ variant: 'destructive', title: 'Failed to load analytics', description: err.message });
       } finally {

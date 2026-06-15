@@ -34,7 +34,7 @@ export default function RoadmapPage() {
   const loadRoadmaps = async () => {
     try {
       const { data } = await api.get('/roadmaps');
-      setRoadmaps(data.data.roadmaps);
+      setRoadmaps(data.data?.roadmaps || []);
       if (data.data.roadmaps.length > 0) setActiveRoadmap(data.data.roadmaps[0]);
     } catch (err) {
       toast({ variant: 'destructive', title: 'Failed to load roadmaps', description: err.message });

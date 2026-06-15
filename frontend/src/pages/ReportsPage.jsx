@@ -17,7 +17,7 @@ export default function ReportsPage() {
     const load = async () => {
       try {
         const { data } = await api.get('/reports');
-        setReports(data.data.reports);
+        setReports(data.data?.reports || []);
       } catch (err) {
         toast({ variant: 'destructive', title: 'Failed to load reports', description: err.message });
       } finally {
