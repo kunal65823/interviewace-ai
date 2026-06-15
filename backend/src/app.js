@@ -21,6 +21,8 @@ dotenv.config();
 
 const app = express();
 
+app.set('trust proxy', 1); // ← add this line
+
 // ---------- CORS - Must be first ----------
 app.use(cors({
   origin: '*',
@@ -51,6 +53,8 @@ const limiter = rateLimit({
   max: Number(process.env.RATE_LIMIT_MAX || 100),
   standardHeaders: true,
   legacyHeaders: false,
+  trustProxy: false,
+  validate: { xForwardedForHeader: false },
   message: { success: false, message: 'Too many requests, please try again later.' },
 });
 app.use('/api', limiter);
